@@ -1,10 +1,47 @@
 <?php
-    $user = $_POST['id'];
+    require '../connect.php';
+
+    session_start();
+
+    if ($_POST['id'] == 'dest') {
+        $_SESSION = array();
+        session_destroy();
+    } else if ($_POST['id'] ) {
+        $id = $_POST['id'];
+
+        $users = mysqli_query($connect, "SELECT * FROM users WHERE id = '$id'");
+
+        $user = mysqli_fetch_array($users);
+
+        $role = $user['role'];
+
+        $_SESSION['role'] = $role;
+        $_SESSION['id'] = $id;
+    }
+
+    $id = $_SESSION['id'];
+
+    $users = mysqli_query($connect, "SELECT * FROM users WHERE id = '$id'");
+
+    $user = mysqli_fetch_array($users);
+
+    $name = $user['name'];
+
+    if ($_SESSION['role'] == 1){
+        $icon = '<ion-icon name="person-outline"></ion-icon>';
+    } else {
+        $icon = '<ion-icon name="person-circle-outline"></ion-icon>';
+    }
 
     if ($user) {
         print <<<HERE
-            <div class="user" id='$user'>
-                <ion-icon name="person-outline"></ion-icon>
+            <div id="user" class="userLeftBox">
+                <div id = "$id" class="user">
+                    $icon                    
+                </div>
+                <div class="userName">
+                    $name
+                </div>
             </div>
     HERE;
     }
@@ -48,12 +85,6 @@
         showDenyButton: true,
         denyButtonColor: '#0094a9',
         denyButtonText: 'Регистрация',
-        // preConfirm: () => {
-        //     return {
-        //     login: document.getElementById('swal-input1').value,
-        //     password: document.getElementById('swal-input2').value
-        //     }
-        // }
         }).then(async (result) => {
             if (result.isConfirmed) {
                 let user = {};
@@ -73,6 +104,10 @@
                         icon: 'success',
                         confirmButtonColor: '#0094a9',
                     }).then((result) => {
+                        cards.forEach((item) =>
+                            item.classList.remove('active')
+                        );
+                        cards[0].classList.add('active');
                         insertHTML("main.php", [], ".main_inner")
                         insertHTML("top_bar.php", user, ".topbar")
                     })
@@ -90,6 +125,7 @@
                 html:
                 '   <input id="swal-input3" class="swal2-input" placeholder="Имя">' +
                     '<input id="swal-input1" class="swal2-input" placeholder="Логин">' +
+                    '<input id="swal-input4" class="swal2-input" placeholder="Почта">' +
                     '<input type="password" id="swal-input2" class="swal2-input" placeholder="Пароль">',
                 focusConfirm: false,
                 confirmButton: true,
@@ -108,6 +144,14 @@
 
                     sendRequest('POST', '../rest-api.php/users', data);
                 }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        Swal.fire({
+                            title: 'Вы зарегистрированны в системе',
+                            icon: 'success',
+                            confirmButtonColor: '#0094a9',
+                        })
+                    }
                 })
             }
         })
@@ -132,38 +176,14 @@
                     icon: 'success',
                     confirmButtonColor: '#0094a9',
                 }).then((result) => {
+                    cards.forEach((item) =>
+                        item.classList.remove('active')
+                    );
+                    cards[0].classList.add('active');
                     insertHTML("main.php", [], ".main_inner")
-                    insertHTML("top_bar.php", [], ".topbar")
+                    insertHTML("top_bar.php", {id: 'dest'}, ".topbar")
                 })
             }
-        })
-    })
-
-    $('.user').click( async function() {
-        let id = this.id;
-
-        let user = {};
-
-        await $.get("../rest-api.php/users/" + id, function(data) {
-            data.forEach((item) => {
-                user['id'] = item['id'];
-                user['name'] = item['name'];
-                user['type'] = item['role']
-            })
-        })
-
-        let role;
-
-        if(user['type'] == '1') {
-            role = 'Студент'
-        } else if (user['type'] == '2') {
-            role = 'Преподаватель'
-        }
-
-        await Swal.fire({
-            title: user['name'],
-            text: role,
-            confirmButtonColor: '#0094a9',
         })
     })
 </script>

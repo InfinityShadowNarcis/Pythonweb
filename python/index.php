@@ -30,7 +30,7 @@
                     <div class="card" id="myCourses">
                         <div>
                             <div class="numbers">Мои курсы</div>
-                            <div class="cardName">Начатые вами курсы</div>
+                            <div class="cardName">Ваши курсы в системе</div>
                         </div>
                         <div class="iconBx">
                             <ion-icon name="create-outline"></ion-icon>
@@ -68,6 +68,13 @@
                         $(div_class).html(data);
                         $(div_class).hide().fadeIn(700);
                     }
+                })
+            }
+
+            function sendRequestWithImage(url, body) {            
+                return fetch(url, {
+                    method: 'POST',
+                    body: body
                 })
             }
 
